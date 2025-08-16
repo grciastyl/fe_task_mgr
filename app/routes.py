@@ -5,7 +5,7 @@ from flask import (
 )
 import requests
 
-BACKEND_URL = "http://127.0.0.1:5001/tasks"
+BACKEND_URL = "http://127.0.0.1:5000/tasks"
 
 app = Flask(__name__)
 
@@ -22,6 +22,7 @@ def task_list():
     response = requests.get(BACKEND_URL)
     if response.status_code == 200:
         task_data = response.json().get("tasks")
+        return render_template("list.html", tasks=task_data)
     return (
         render_template("error.html", error=response.status_code),
         response.status_code
@@ -52,4 +53,16 @@ def create_task():
     return (
         render_template("error.html", error=response.status_code),
         response.status_code 
+    )
+
+@app.patch("/tasks/<int:pk>")
+def edit_task(pk):
+    task_data = flask_request.form
+    url = "%s/%s" % (BACKEND_URL, pk)
+    response = requests.patch(url, json=task_data)
+    if response.status_code == 204:
+        return render_template("success.html", msg="Task updated")
+    return (
+        render_template("error.html", error=response.status_code),
+        response.status_code
     )
